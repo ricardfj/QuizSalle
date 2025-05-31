@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Interactivo</title>
+  <script src="https://cdn.tailwindcss.com">
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("start-button").addEventListener("click", startQuiz);
+  document.getElementById("submit-button").addEventListener("click", submitAnswer);
+});
+
+</script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-xl w-full p-6 bg-white rounded-xl shadow-lg">
+    <div id="quiz-container" class="space-y-6">
+      <div id="name-form">
+        <h1 class="text-2xl font-bold mb-4">¿Cómo te llamas?</h1>
+        <input type="text" id="username" class="w-full p-2 border border-gray-300 rounded" placeholder="Tu nombre" />
+        <button id="start-button" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Empezar</button>
+      </div>
+
+      <div id="question-form" class="hidden">
+        <h2 id="question-category" class="text-sm text-gray-500 uppercase"></h2>
+        <h1 id="question-text" class="text-xl font-semibold"></h1>
+        <div id="options-container" class="mt-4 space-y-2"></div>
+        <input type="text" id="text-answer" class="w-full p-2 border border-gray-300 rounded hidden" placeholder="Tu respuesta" />
+        <button id="submit-button" class="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Responder</button>
+      </div>
+
+      <div id="result-screen" class="hidden text-center">
+        <h1 class="text-2xl font-bold">¡Quiz complert!</h1>
+        <p class="mt-2 text-lg">Gracies, <span id="result-name"></span>.</p>
+        <p class="text-xl mt-2">Si treus menys de 28 vas a la recuperació!!.La teva puntuació:  <span id="score"></span> / <span id="total"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+    { categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Quién protagonizaba la serie infantil “La bola de cristal”?", opciones: ["Teresa Rabal", "Alaska", "Mayra Gómez Kemp"], respuesta: "B" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Qué payaso de la tele decía “¿Cómo están ustedes?”?", opciones: ["Miliki", "Jose Maria Aznar", "Gaby"], respuesta: "A" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Cómo se llamaba la amiga inválida de Heidi?", opciones: ["Clara", "Almudena", "Elsa"], respuesta: "A" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Qué animal acompañaba siempre a Heidi?", opciones: ["Un gato", "Un ciervo", "Un perro"], respuesta: "C" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Texto", pregunta: "¿Y. ¿como se llamaba ese perro?.(Pista: hay un fenomeno metereologico que se llama igual)", respuesta: "NIEBLA" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Qué famoso programa infantil presentaban Torrebruno y sus marionetas?", opciones: ["Cine de medianoche", "Sabadabada", "El show de los teleñecos"], respuesta: "B" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Texto", pregunta: "¿Quién fue el primer presentador/a (nombre y primer apellido) del concurso \"Un, dos, tres... responda otra vez\" ?", respuesta: "KIKO LEDGARD" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Qué personaje de \"Barrio Sésamo\" enseñaba las letras del abecedario?", opciones: ["Espinete", "Epi", "Coco"], respuesta: "C" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Qué actriz protagonizaba anuncios de Nenuco y fue conocida en la tele de los 80?", opciones: ["Barbara Rey", "Ana Obregón", "Eva Nasarre"], respuesta: "C" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Cómo se llamaba el personaje con gafas y capa roja en Los Chiripitifláuticos?", opciones: ["Locomotoro", "Valentina", "Capitán Tan"], respuesta: "C" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Cómo se llamaba el mono que acompañaba a Marco?", opciones: ["Llorente", "Amedio", "Coco"], respuesta: "B" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Qué dúo musical español tuvo gran éxito con temas como “Háblame de ti” y “Esperanzas”?", opciones: ["Pecos", "Camela", "Los Chichos"], respuesta: "A" },
+	{ categoria: "MUSICA , CINE Y TV", tipo: "Seleccion", pregunta: "¿Qué grupo internacional hizo famoso el tema “Rasputin”?", opciones: ["Boney M", "Bee Gees", "ABBA"], respuesta: "A" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Cuál es el fundador de los Hermanos de las Escuelas Cristianas (La Salle)?", opciones: ["Don Juan Bosco", "Juan Bautista", "El Papa Salle IX"], respuesta: "B" },
+	{ categoria: "EL COLE", tipo: "Texto", pregunta: "¿Quién era el sexto de la lista en EGB...Aguilar,...? (apellido solamente)", respuesta: "CABALLERO" },
+	{ categoria: "EL COLE", tipo: "Texto", pregunta: "¿y quién era el penúltimo? (apellido solamente)", respuesta: "XICOLA" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Cuál fue uno de los primeros colegios La Salle establecidos en España?", opciones: ["La Salle Bonanova", "La Salle Montcada", "La Salle Reus"], respuesta: "A" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Cuál fue uno de los primeros colegios La Salle establecidos en España?", opciones: ["Siglo XVII", "Siglo XVIII", "Siglo XIX"], respuesta: "C" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Qué lema identifica a los centros La Salle en España y en todo el mundo?", opciones: ["Ad maiorem Dei gloriam", "Cantemos y follemos", "Fe, fraternidad y compromiso"], respuesta: "C" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Qué profe decía viva er Betis man que pierda?", opciones: ["El \"mono\"", "Hermano Prats", "Hermano Nicolás"], respuesta: "C" },
+	{ categoria: "EL COLE", tipo: "Texto", pregunta: "¿Qué profe solía repetir la frase que si trabajais, acabareis en Asland o Aismalibar? (apellido solamente)", respuesta: "CASQUERO" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Qué profesor, al entrar en clase, si había follón solía decir \"Os mato, jaula de pajarracos embrutecidos\"", opciones: ["Abel", "Llorente", "Esteban"], respuesta: "B" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Qué coche tenía Alfredo Isla cuando nos daba mates en 1º de BUP?", opciones: ["R-11", "Simca 1000(en el que es dificil hacer el amor)", "SEAT 127", "Ferrari testarrosa de segunda mano"], respuesta: "C" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Qué Hermano le explicaba a Juan Ayen dónde empezaba la columna vertebral y dónde acababa... y terminó con el dedo en su ojete?", opciones: ["H. Abel", "H. Ramón", "H. Pablo"], respuesta: "A" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Cuál es el segundo apellido de aquel que se llama Juan Alberto?", opciones: ["López", "Gargallo", "Moreno"], respuesta: "B" },
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Cuál es el segundo apellido de aquel que se llama Rafael?", opciones: ["López", "Sánchez", "Alvarez"], respuesta: "C" },
+	{ categoria: "EL COLE", tipo: "Texto", pregunta: "¿Cuál es el segundo apellido de aquel que se llama Tomás?", respuesta: "HERRERO" }, 
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿En que año empezamos esta aventura?", opciones: ["1970", "1971", "1972"], respuesta: "B" }, 
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "Que mascota tuvimos en 3ºBUP?", opciones: ["Lagartija", "Rana", "Pato"], respuesta: "C" }, 
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "Como les llamaban alumnos que se quedaban a comer y llevaban una fiambrera?", opciones: ["soperos", "mediopendionistas", "meseros", "los pobres"], respuesta: "A" }, 
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Cual era la ratio de alumnos en EGB?", opciones: ["40-45", "35-40", "30-35"], respuesta: "A" }, 
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Como se llamaba el bar del c/Lleida donde algunos (eran los que Casquero les decia que acabarian en el Asland )iban a jugar al futbolín? ", opciones: ["HJ", "Centric", "Carusso"], respuesta: "C" }, 
+	{ categoria: "EL COLE", tipo: "Seleccion", pregunta: "¿Y, quién era el profe que a veces iba con ellos ajugar al futbolín?", opciones: ["Casquero", "P.Alonso", "Hno.Prats"], respuesta: "B" }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let userName = "";
+
+    function startQuiz() {
+      userName = document.getElementById("username").value.trim();
+      if (!userName) return alert("Por favor, introduce tu nombre.");
+      document.getElementById("name-form").classList.add("hidden");
+      document.getElementById("question-form").classList.remove("hidden");
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[current];
+      document.getElementById("question-category").innerText = q.categoria;
+      document.getElementById("question-text").innerText = q.pregunta;
+
+      const optionsContainer = document.getElementById("options-container");
+      const textInput = document.getElementById("text-answer");
+      optionsContainer.innerHTML = "";
+      textInput.classList.add("hidden");
+
+      if (q.tipo === "Seleccion") {
+        q.opciones.forEach((opcion, i) => {
+          const letra = String.fromCharCode(65 + i);
+          const id = `opt-${i}`;
+          optionsContainer.innerHTML += `
+            <label class="block">
+              <input type="radio" name="answer" value="${letra}" id="${id}" class="mr-2" /> ${letra}) ${opcion}
+            </label>
+          `;
+        });
+      } else {
+		textInput.value = ""; // Limpiar el campo de entrada de texto
+		textInput.classList.remove("hidden");
+			}
+    }
+
+    function submitAnswer() {
+      const q = questions[current];
+      let userAnswer = "";
+      if (q.tipo === "Seleccion") {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        if (!selected) return alert("Selecciona una opción.");
+        userAnswer = selected.value;
+      } else {
+        userAnswer = document.getElementById("text-answer").value.trim().toUpperCase();
+        if (!userAnswer) return alert("Escribe una respuesta.");
+      }
+
+      if (userAnswer === q.respuesta) score++;
+      current++;
+
+      if (current >= questions.length) {
+        document.getElementById("question-form").classList.add("hidden");
+        document.getElementById("result-name").innerText = userName;
+        document.getElementById("score").innerText = score;
+        document.getElementById("total").innerText = questions.length;
+        document.getElementById("result-screen").classList.remove("hidden");
+      } else {
+        showQuestion();
+      }
+    }
+  
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("start-button").addEventListener("click", startQuiz);
+  document.getElementById("submit-button").addEventListener("click", submitAnswer);
+});
+
+</script>
+</body>
+</html>
